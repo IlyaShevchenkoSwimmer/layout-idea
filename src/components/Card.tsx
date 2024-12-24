@@ -9,9 +9,16 @@ interface ImageCoords {
   lastY: number;
   newX: number;
   newY: number;
+  centerX: number;
+  centerY: number;
 }
 
-function Card() {
+interface CardProps {
+  cols: number;
+  rows: number;
+}
+
+function Card(props: CardProps) {
   const imgRef = useRef(null);
   let dragImg: number = 0;
   let leftDif: number = 0;
@@ -21,9 +28,9 @@ function Card() {
 
   const media = [];
 
-  const rows: number = 2;
+  const cols = props.cols;
 
-  const cols: number = 2;
+  const rows = props.rows;
 
   const collageNum: number = cols * rows;
 
@@ -58,6 +65,8 @@ function Card() {
       lastY: 0,
       newX: 0,
       newY: 0,
+      centerX: 0,
+      centerY: 0,
     });
   }
 
@@ -66,6 +75,19 @@ function Card() {
       const element = event.target as HTMLImageElement;
       const whichImg: number = Number(element.id.slice(3));
       dragImg = whichImg;
+      const image = document.querySelector(`#img-div${dragImg}`);
+      for (let i = 0; i < collageNum; i++) {
+        const iImg = document.querySelector(`#img-div${i}`);
+        coordsArr[i] = {
+          ...coordsArr[i],
+          centerX:
+            (iImg as HTMLElement).offsetLeft +
+            (iImg as HTMLElement).offsetWidth / 2,
+          centerY:
+            (iImg as HTMLElement).offsetTop +
+            (iImg as HTMLElement).offsetHeight / 2,
+        };
+      }
       coordsArr[whichImg] = {
         ...coordsArr[whichImg],
         id: whichImg,
@@ -74,14 +96,14 @@ function Card() {
         newX: (event as MouseEvent).clientX,
         newY: (event as MouseEvent).clientY,
       };
-      const image = document.querySelector(`#img-div${dragImg}`);
+      (image as HTMLElement).style.zIndex = "100";
       leftDif =
         (event as MouseEvent).clientX -
-        (image as HTMLElement).offsetLeft +
+        (image as HTMLElement).clientLeft +
         (dragImg % cols) * (image as HTMLElement).offsetWidth;
       topDif =
         (event as MouseEvent).clientY -
-        (image as HTMLElement).offsetTop +
+        (image as HTMLElement).clientTop +
         Math.floor(dragImg / cols) * (image as HTMLElement).offsetHeight;
       document.addEventListener("mousemove", mouseMove);
       document.addEventListener("mouseup", mouseUp);
@@ -99,12 +121,58 @@ function Card() {
 
   const mouseMove = useCallback(
     (event: Event) => {
+      const image = document.querySelector(`#img-div${dragImg}`);
+      console.log((image as HTMLElement).offsetLeft);
+      console.log(leftDif);
+      coordsArr.forEach((img, index) => {
+        if (index === dragImg) {
+          return;
+        }
+        if (
+          img.centerX - 20 < coordsArr[dragImg].centerX &&
+          img.centerX + 20 > coordsArr[dragImg].centerX
+        ) {
+          if (
+            img.centerY - 20 < coordsArr[dragImg].centerY &&
+            img.centerY + 20 > coordsArr[dragImg].centerY
+          ) {
+            const newCol: number = coordsArr[dragImg].col;
+            coordsArr[dragImg].col = img.col;
+            img.col = newCol;
+            const newRow: number = coordsArr[dragImg].row;
+            coordsArr[dragImg].row = img.row;
+            img.row = newRow;
+            const intersectedImg = document.querySelector(`#img-div${img.id}`);
+            (
+              intersectedImg as HTMLElement
+            ).style.gridColumnStart = `${img.col}`;
+            (
+              image as HTMLElement
+            ).style.gridColumnStart = `${coordsArr[dragImg].col}`;
+            (
+              image as HTMLElement
+            ).style.gridRowStart = `${coordsArr[dragImg].row}`;
+            (intersectedImg as HTMLElement).style.gridRowStart = `${img.row}`;
+            (intersectedImg as HTMLElement).style.left = `0`;
+            (intersectedImg as HTMLElement).style.top = `0`;
+            leftDif =
+              (event as MouseEvent).clientX -
+              (image as HTMLElement).clientLeft +
+              (dragImg % cols) * (image as HTMLElement).offsetWidth;
+          }
+        }
+      });
       coordsArr[dragImg] = {
         ...coordsArr[dragImg],
         newX: (event as MouseEvent).clientX,
         newY: (event as MouseEvent).clientY,
+        centerX:
+          (image as HTMLElement).offsetLeft +
+          (image as HTMLElement).offsetWidth / 2,
+        centerY:
+          (image as HTMLElement).offsetTop +
+          (image as HTMLElement).offsetHeight / 2,
       };
-      const image = document.querySelector(`#img-div${dragImg}`);
       (image as HTMLElement).style.left = `${
         coordsArr[dragImg].newX - leftDif
       }px`;
@@ -126,6 +194,7 @@ function Card() {
     (image as HTMLElement).style.left = "0";
     setTimeout(() => {
       (image as HTMLElement).style.transition = "";
+      (image as HTMLElement).style.zIndex = "0";
     }, 500);
     document.removeEventListener("mousemove", mouseMove);
     document.removeEventListener("mouseup", mouseUp);
