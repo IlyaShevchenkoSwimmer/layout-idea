@@ -97,14 +97,9 @@ function Card(props: CardProps) {
         newY: (event as MouseEvent).clientY,
       };
       (image as HTMLElement).style.zIndex = "100";
-      leftDif =
-        (event as MouseEvent).clientX -
-        (image as HTMLElement).clientLeft +
-        (dragImg % cols) * (image as HTMLElement).offsetWidth;
-      topDif =
-        (event as MouseEvent).clientY -
-        (image as HTMLElement).clientTop +
-        Math.floor(dragImg / cols) * (image as HTMLElement).offsetHeight;
+      console.log((image as HTMLElement).offsetLeft);
+      leftDif = (event as MouseEvent).clientX;
+      topDif = (event as MouseEvent).clientY;
       document.addEventListener("mousemove", mouseMove);
       document.addEventListener("mouseup", mouseUp);
     },
@@ -122,8 +117,6 @@ function Card(props: CardProps) {
   const mouseMove = useCallback(
     (event: Event) => {
       const image = document.querySelector(`#img-div${dragImg}`);
-      console.log((image as HTMLElement).offsetLeft);
-      console.log(leftDif);
       coordsArr.forEach((img, index) => {
         if (index === dragImg) {
           return;
@@ -155,10 +148,9 @@ function Card(props: CardProps) {
             (intersectedImg as HTMLElement).style.gridRowStart = `${img.row}`;
             (intersectedImg as HTMLElement).style.left = `0`;
             (intersectedImg as HTMLElement).style.top = `0`;
-            leftDif =
-              (event as MouseEvent).clientX -
-              (image as HTMLElement).clientLeft +
-              (dragImg % cols) * (image as HTMLElement).offsetWidth;
+            leftDif = (event as MouseEvent).clientX;
+            topDif = (event as MouseEvent).clientY;
+            mouseUp();
           }
         }
       });
