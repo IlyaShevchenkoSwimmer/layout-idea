@@ -72,6 +72,7 @@ function Card(props: CardProps) {
 
   const mouseDown = useCallback(
     (event: Event) => {
+      console.log(coordsArr);
       const element = event.target as HTMLImageElement;
       const whichImg: number = Number(element.id.slice(3));
       dragImg = whichImg;
@@ -97,7 +98,6 @@ function Card(props: CardProps) {
         newY: (event as MouseEvent).clientY,
       };
       (image as HTMLElement).style.zIndex = "100";
-      console.log((image as HTMLElement).offsetLeft);
       leftDif = (event as MouseEvent).clientX;
       topDif = (event as MouseEvent).clientY;
       document.addEventListener("mousemove", mouseMove);
@@ -146,11 +146,35 @@ function Card(props: CardProps) {
               image as HTMLElement
             ).style.gridRowStart = `${coordsArr[dragImg].row}`;
             (intersectedImg as HTMLElement).style.gridRowStart = `${img.row}`;
-            (intersectedImg as HTMLElement).style.left = `0`;
-            (intersectedImg as HTMLElement).style.top = `0`;
-            leftDif = (event as MouseEvent).clientX;
-            topDif = (event as MouseEvent).clientY;
-            mouseUp();
+            (intersectedImg as HTMLElement).animate(
+              [
+                {
+                  transform: `translate(${
+                    img.centerX -
+                    (intersectedImg as HTMLElement).offsetWidth / 2
+                  }px, ${
+                    img.centerY -
+                    (intersectedImg as HTMLElement).offsetHeight / 2
+                  }px)`,
+                },
+                { transform: "translate(0px, 0px)" },
+              ],
+              { duration: 300 }
+            );
+
+            img.centerX =
+              (intersectedImg as HTMLElement).offsetLeft +
+              (intersectedImg as HTMLElement).offsetWidth / 2;
+            img.centerY =
+              (intersectedImg as HTMLElement).offsetTop +
+              (intersectedImg as HTMLElement).offsetHeight / 2;
+            leftDif -=
+              (img.col - coordsArr[dragImg].col) *
+              (image as HTMLElement).offsetWidth;
+            topDif -=
+              (img.row - coordsArr[dragImg].row) *
+              (image as HTMLElement).offsetHeight;
+            console.log(coordsArr);
           }
         }
       });
