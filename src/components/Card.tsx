@@ -72,7 +72,6 @@ function Card(props: CardProps) {
 
   const mouseDown = useCallback(
     (event: Event) => {
-      console.log(coordsArr);
       const element = event.target as HTMLImageElement;
       const whichImg: number = Number(element.id.slice(3));
       dragImg = whichImg;
@@ -122,12 +121,12 @@ function Card(props: CardProps) {
           return;
         }
         if (
-          img.centerX - 20 < coordsArr[dragImg].centerX &&
-          img.centerX + 20 > coordsArr[dragImg].centerX
+          img.centerX - 30 < coordsArr[dragImg].centerX &&
+          img.centerX + 30 > coordsArr[dragImg].centerX
         ) {
           if (
-            img.centerY - 20 < coordsArr[dragImg].centerY &&
-            img.centerY + 20 > coordsArr[dragImg].centerY
+            img.centerY - 30 < coordsArr[dragImg].centerY &&
+            img.centerY + 30 > coordsArr[dragImg].centerY
           ) {
             const newCol: number = coordsArr[dragImg].col;
             coordsArr[dragImg].col = img.col;
@@ -150,16 +149,18 @@ function Card(props: CardProps) {
               [
                 {
                   transform: `translate(${
-                    img.centerX -
-                    (intersectedImg as HTMLElement).offsetWidth / 2
+                    (coordsArr[dragImg].col - img.col) *
+                    (intersectedImg as HTMLElement).offsetWidth
                   }px, ${
-                    img.centerY -
-                    (intersectedImg as HTMLElement).offsetHeight / 2
+                    (coordsArr[dragImg].row - img.row) *
+                    (intersectedImg as HTMLElement).offsetHeight
                   }px)`,
                 },
-                { transform: "translate(0px, 0px)" },
+                {
+                  transform: `translate(0px, 0px)`,
+                },
               ],
-              { duration: 300 }
+              { duration: 200 }
             );
 
             img.centerX =
@@ -174,7 +175,6 @@ function Card(props: CardProps) {
             topDif -=
               (img.row - coordsArr[dragImg].row) *
               (image as HTMLElement).offsetHeight;
-            console.log(coordsArr);
           }
         }
       });
