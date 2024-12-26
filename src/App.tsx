@@ -5,7 +5,7 @@ import Card from "./components/Card.tsx";
 function App() {
   return (
     <>
-      <Card cols={2} rows={3} />
+      <Card cols={3} rows={2} />
     </>
   );
 }

@@ -18,6 +18,13 @@ interface CardProps {
   rows: number;
 }
 
+function between(point: number, min: number, max: number): boolean {
+  const first: boolean = point > min;
+  const second: boolean = point < max;
+  const result: boolean = first && second;
+  return result;
+}
+
 function Card(props: CardProps) {
   const imgRef = useRef(null);
   let dragImg: number = 0;
@@ -27,6 +34,8 @@ function Card(props: CardProps) {
   const coordsArr: ImageCoords[] = [];
 
   const media = [];
+
+  let moving: boolean = false;
 
   const cols = props.cols;
 
@@ -116,68 +125,86 @@ function Card(props: CardProps) {
   const mouseMove = useCallback(
     (event: Event) => {
       const image = document.querySelector(`#img-div${dragImg}`);
-      coordsArr.forEach((img, index) => {
-        if (index === dragImg) {
-          return;
-        }
-        if (
-          img.centerX - 30 < coordsArr[dragImg].centerX &&
-          img.centerX + 30 > coordsArr[dragImg].centerX
-        ) {
+      for (let img = 0; img < collageNum; img++) {
+        if (img === dragImg) {
+          continue;
+        } else {
           if (
-            img.centerY - 30 < coordsArr[dragImg].centerY &&
-            img.centerY + 30 > coordsArr[dragImg].centerY
+            between(
+              coordsArr[dragImg].centerX,
+              coordsArr[img].centerX - 40,
+              coordsArr[img].centerX + 40
+            )
           ) {
-            const newCol: number = coordsArr[dragImg].col;
-            coordsArr[dragImg].col = img.col;
-            img.col = newCol;
-            const newRow: number = coordsArr[dragImg].row;
-            coordsArr[dragImg].row = img.row;
-            img.row = newRow;
-            const intersectedImg = document.querySelector(`#img-div${img.id}`);
-            (
-              intersectedImg as HTMLElement
-            ).style.gridColumnStart = `${img.col}`;
-            (
-              image as HTMLElement
-            ).style.gridColumnStart = `${coordsArr[dragImg].col}`;
-            (
-              image as HTMLElement
-            ).style.gridRowStart = `${coordsArr[dragImg].row}`;
-            (intersectedImg as HTMLElement).style.gridRowStart = `${img.row}`;
-            (intersectedImg as HTMLElement).animate(
-              [
-                {
-                  transform: `translate(${
-                    (coordsArr[dragImg].col - img.col) *
-                    (intersectedImg as HTMLElement).offsetWidth
-                  }px, ${
-                    (coordsArr[dragImg].row - img.row) *
-                    (intersectedImg as HTMLElement).offsetHeight
-                  }px)`,
-                },
-                {
-                  transform: `translate(0px, 0px)`,
-                },
-              ],
-              { duration: 200 }
-            );
-
-            img.centerX =
-              (intersectedImg as HTMLElement).offsetLeft +
-              (intersectedImg as HTMLElement).offsetWidth / 2;
-            img.centerY =
-              (intersectedImg as HTMLElement).offsetTop +
-              (intersectedImg as HTMLElement).offsetHeight / 2;
-            leftDif -=
-              (img.col - coordsArr[dragImg].col) *
-              (image as HTMLElement).offsetWidth;
-            topDif -=
-              (img.row - coordsArr[dragImg].row) *
-              (image as HTMLElement).offsetHeight;
+            if (
+              between(
+                coordsArr[dragImg].centerY,
+                coordsArr[img].centerY - 40,
+                coordsArr[img].centerY + 40
+              )
+            ) {
+              if (!moving) {
+                moving = true;
+                const newCol: number = coordsArr[dragImg].col;
+                coordsArr[dragImg].col = coordsArr[img].col;
+                coordsArr[img].col = newCol;
+                const newRow: number = coordsArr[dragImg].row;
+                coordsArr[dragImg].row = coordsArr[img].row;
+                coordsArr[img].row = newRow;
+                const intersectedImg = document.querySelector(
+                  `#img-div${coordsArr[img].id}`
+                );
+                (
+                  intersectedImg as HTMLElement
+                ).style.gridColumnStart = `${coordsArr[img].col}`;
+                (
+                  image as HTMLElement
+                ).style.gridColumnStart = `${coordsArr[dragImg].col}`;
+                (
+                  image as HTMLElement
+                ).style.gridRowStart = `${coordsArr[dragImg].row}`;
+                (
+                  intersectedImg as HTMLElement
+                ).style.gridRowStart = `${coordsArr[img].row}`;
+                (intersectedImg as HTMLElement).animate(
+                  [
+                    {
+                      transform: `translate(${
+                        (coordsArr[dragImg].col - coordsArr[img].col) *
+                        (intersectedImg as HTMLElement).offsetWidth
+                      }px, ${
+                        (coordsArr[dragImg].row - coordsArr[img].row) *
+                        (intersectedImg as HTMLElement).offsetHeight
+                      }px)`,
+                    },
+                    {
+                      transform: `translate(0px, 0px)`,
+                    },
+                  ],
+                  { duration: 200 }
+                );
+                setTimeout(() => {
+                  moving = false;
+                }, 200);
+                coordsArr[img].centerX =
+                  (intersectedImg as HTMLElement).offsetLeft +
+                  (intersectedImg as HTMLElement).offsetWidth / 2;
+                coordsArr[img].centerY =
+                  (intersectedImg as HTMLElement).offsetTop +
+                  (intersectedImg as HTMLElement).offsetHeight / 2;
+                leftDif -=
+                  (coordsArr[img].col - coordsArr[dragImg].col) *
+                  (image as HTMLElement).offsetWidth;
+                topDif -=
+                  (coordsArr[img].row - coordsArr[dragImg].row) *
+                  (image as HTMLElement).offsetHeight;
+                break;
+              }
+            }
           }
         }
-      });
+      }
+
       coordsArr[dragImg] = {
         ...coordsArr[dragImg],
         newX: (event as MouseEvent).clientX,
