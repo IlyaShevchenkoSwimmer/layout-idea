@@ -11,11 +11,13 @@ interface ImageCoords {
   newY: number;
   centerX: number;
   centerY: number;
+  tailCSSWidth: number;
 }
 
 interface CardProps {
   cols: number;
   rows: number;
+  wantedForm: string;
 }
 
 function between(point: number, min: number, max: number): boolean {
@@ -41,14 +43,16 @@ function Card(props: CardProps) {
 
   const rows = props.rows;
 
-  const collageNum: number = cols * rows;
+  const wantedForm = props.wantedForm;
+
+  let collageNum: number = cols * rows;
 
   for (let i = 0; i < collageNum; i++) {
     const col: number = (i % cols) + 1;
     const row: number = Math.floor(i / cols) + 1;
     media.push(
       <div
-        className={`w-40 h-40 rounded-2xl p-2 relative`}
+        className={`rounded-2xl p-2 relative`}
         style={{
           gridColumnStart: `${col}`,
           gridRowStart: `${row}`,
@@ -58,7 +62,8 @@ function Card(props: CardProps) {
         id={`img-div${i}`}
       >
         <img
-          className="object-cover w-36 h-36 rounded-2xl cursor-grab"
+          className="object-cover rounded-2xl cursor-grab"
+          style={{ width: "100%", height: "100%" }}
           src={`./images/${i + 1}.jpeg`}
           alt="card-img"
           draggable="false"
@@ -76,6 +81,7 @@ function Card(props: CardProps) {
       newY: 0,
       centerX: 0,
       centerY: 0,
+      tailCSSWidth: 40,
     });
   }
 
@@ -247,8 +253,8 @@ function Card(props: CardProps) {
     <article
       className={`bg-teal-400/40 rounded-2xl relative grid`}
       style={{
-        gridTemplateColumns: cols.toString(),
-        gridTemplateRows: rows.toString(),
+        gridTemplateColumns: `repeat(${cols}, 10rem)`,
+        gridTemplateRows: `repeat(${rows}, 10rem)`,
       }}
       id="card"
     >
