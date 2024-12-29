@@ -3,8 +3,10 @@ import "./Card.css";
 
 interface ImageCoords {
   id: number;
-  col: number;
-  row: number;
+  colStart: number;
+  colEnd: number;
+  rowStart: number;
+  rowEnd: number;
   lastX: number;
   lastY: number;
   newX: number;
@@ -15,9 +17,10 @@ interface ImageCoords {
 }
 
 interface CardProps {
-  cols: number;
-  rows: number;
-  wantedForm: string;
+  cols?: number;
+  rows?: number;
+  imgNum?: number;
+  wantedForm?: string;
 }
 
 function between(point: number, min: number, max: number): boolean {
@@ -45,44 +48,142 @@ function Card(props: CardProps) {
 
   const wantedForm = props.wantedForm;
 
-  let collageNum: number = cols * rows;
+  const imgNum = props.imgNum;
+
+  let collageNum: number = 0;
+
+  if (cols && rows) {
+    collageNum = cols * rows;
+  }
+
+  if (imgNum) {
+    collageNum = imgNum;
+  }
 
   for (let i = 0; i < collageNum; i++) {
-    const col: number = (i % cols) + 1;
-    const row: number = Math.floor(i / cols) + 1;
-    media.push(
-      <div
-        className={`rounded-2xl p-2 relative`}
-        style={{
-          gridColumnStart: `${col}`,
-          gridRowStart: `${row}`,
-        }}
-        ref={imgRef}
-        key={i}
-        id={`img-div${i}`}
-      >
-        <img
-          className="object-cover rounded-2xl cursor-grab"
-          style={{ width: "100%", height: "100%" }}
-          src={`./images/${i + 1}.jpeg`}
-          alt="card-img"
-          draggable="false"
-          id={`img${i}`}
-        />
-      </div>
-    );
-    coordsArr.push({
-      id: i,
-      col: col,
-      row: row,
-      lastX: 0,
-      lastY: 0,
-      newX: 0,
-      newY: 0,
-      centerX: 0,
-      centerY: 0,
-      tailCSSWidth: 40,
-    });
+    if (cols && rows) {
+      const col: number = (i % cols) + 1;
+      const row: number = Math.floor(i / cols) + 1;
+      media.push(
+        <div
+          className={`rounded-2xl p-2 relative`}
+          style={{
+            gridColumnStart: `${col}`,
+            gridRowStart: `${row}`,
+          }}
+          ref={imgRef}
+          key={i}
+          id={`img-div${i}`}
+        >
+          <img
+            className="object-cover rounded-2xl cursor-grab"
+            style={{ width: "100%", height: "100%" }}
+            src={`./images/${i + 1}.jpeg`}
+            alt="card-img"
+            draggable="false"
+            id={`img${i}`}
+          />
+        </div>
+      );
+      coordsArr.push({
+        id: i,
+        colStart: col,
+        colEnd: col + 1,
+        rowStart: row,
+        rowEnd: row + 1,
+        lastX: 0,
+        lastY: 0,
+        newX: 0,
+        newY: 0,
+        centerX: 0,
+        centerY: 0,
+        tailCSSWidth: 40,
+      });
+    }
+    if (imgNum) {
+      if (Math.floor(i / 2) % 2 === 0) {
+        const colStart: number = i % 2 === 0 ? 1 : 3;
+        const colEnd: number = i % 2 === 0 ? 3 : 4;
+        const rowStart: number = Math.floor(i / 2) + 1;
+        media.push(
+          <div
+            className={`rounded-2xl p-2 relative`}
+            style={{
+              gridColumnStart: `${colStart}`,
+              gridColumnEnd: `${colEnd}`,
+              gridRowStart: `${rowStart}`,
+            }}
+            ref={imgRef}
+            key={i}
+            id={`img-div${i}`}
+          >
+            <img
+              className="object-cover rounded-2xl cursor-grab"
+              style={{ width: "100%", height: "100%" }}
+              src={`./images/${i + 1}.jpeg`}
+              alt="card-img"
+              draggable="false"
+              id={`img${i}`}
+            />
+          </div>
+        );
+        coordsArr.push({
+          id: i,
+          colStart: colStart,
+          colEnd: colEnd,
+          rowStart: rowStart,
+          rowEnd: rowStart + 1,
+          lastX: 0,
+          lastY: 0,
+          newX: 0,
+          newY: 0,
+          centerX: 0,
+          centerY: 0,
+          tailCSSWidth: 40,
+        });
+      }
+      if (Math.floor(i / 2) % 2 === 1) {
+        const colStart: number = i % 2 === 0 ? 1 : 2;
+        const colEnd: number = i % 2 === 0 ? 2 : 4;
+        const rowStart: number = Math.floor(i / 2) + 1;
+        media.push(
+          <div
+            className={`rounded-2xl p-2 relative`}
+            style={{
+              gridColumnStart: `${colStart}`,
+              gridColumnEnd: `${colEnd}`,
+              gridRowStart: `${rowStart}`,
+            }}
+            ref={imgRef}
+            key={i}
+            id={`img-div${i}`}
+          >
+            <img
+              className="object-cover rounded-2xl cursor-grab"
+              style={{ width: "100%", height: "100%" }}
+              src={`./images/${i + 1}.jpeg`}
+              alt="card-img"
+              draggable="false"
+              id={`img${i}`}
+            />
+          </div>
+        );
+        coordsArr.push({
+          id: i,
+          colStart: colStart,
+          colEnd: colEnd,
+          rowStart: rowStart,
+          rowEnd: rowStart + 1,
+          lastX: 0,
+          lastY: 0,
+          newX: 0,
+          newY: 0,
+          centerX: 0,
+          centerY: 0,
+          tailCSSWidth: 40,
+        });
+      }
+    }
   }
 
   const mouseDown = useCallback(
@@ -151,35 +252,55 @@ function Card(props: CardProps) {
             ) {
               if (!moving) {
                 moving = true;
-                const newCol: number = coordsArr[dragImg].col;
-                coordsArr[dragImg].col = coordsArr[img].col;
-                coordsArr[img].col = newCol;
-                const newRow: number = coordsArr[dragImg].row;
-                coordsArr[dragImg].row = coordsArr[img].row;
-                coordsArr[img].row = newRow;
+                const newColStart: number = coordsArr[dragImg].colStart;
+                coordsArr[dragImg].colStart = coordsArr[img].colStart;
+                coordsArr[img].colStart = newColStart;
+                const newRowStart: number = coordsArr[dragImg].rowStart;
+                coordsArr[dragImg].rowStart = coordsArr[img].rowStart;
+                coordsArr[img].rowStart = newRowStart;
+                const newColEnd: number = coordsArr[dragImg].colEnd;
+                coordsArr[dragImg].colEnd = coordsArr[img].colEnd;
+                coordsArr[img].colEnd = newColEnd;
+                const newRowEnd: number = coordsArr[dragImg].rowEnd;
+                coordsArr[dragImg].rowEnd = coordsArr[img].rowEnd;
+                coordsArr[img].rowEnd = newRowEnd;
                 const intersectedImg = document.querySelector(
                   `#img-div${coordsArr[img].id}`
                 );
                 (
                   intersectedImg as HTMLElement
-                ).style.gridColumnStart = `${coordsArr[img].col}`;
+                ).style.gridColumnStart = `${coordsArr[img].colStart}`;
                 (
                   image as HTMLElement
-                ).style.gridColumnStart = `${coordsArr[dragImg].col}`;
-                (
-                  image as HTMLElement
-                ).style.gridRowStart = `${coordsArr[dragImg].row}`;
+                ).style.gridColumnStart = `${coordsArr[dragImg].colStart}`;
                 (
                   intersectedImg as HTMLElement
-                ).style.gridRowStart = `${coordsArr[img].row}`;
+                ).style.gridColumnEnd = `${coordsArr[img].colEnd}`;
+                (
+                  image as HTMLElement
+                ).style.gridColumnEnd = `${coordsArr[dragImg].colEnd}`;
+                (
+                  image as HTMLElement
+                ).style.gridRowStart = `${coordsArr[dragImg].rowStart}`;
+                (
+                  intersectedImg as HTMLElement
+                ).style.gridRowStart = `${coordsArr[img].rowStart}`;
+                (
+                  image as HTMLElement
+                ).style.gridRowEnd = `${coordsArr[dragImg].rowEnd}`;
+                (
+                  intersectedImg as HTMLElement
+                ).style.gridRowEnd = `${coordsArr[img].rowEnd}`;
                 (intersectedImg as HTMLElement).animate(
                   [
                     {
                       transform: `translate(${
-                        (coordsArr[dragImg].col - coordsArr[img].col) *
+                        (coordsArr[dragImg].colStart -
+                          coordsArr[img].colStart) *
                         (intersectedImg as HTMLElement).offsetWidth
                       }px, ${
-                        (coordsArr[dragImg].row - coordsArr[img].row) *
+                        (coordsArr[dragImg].rowStart -
+                          coordsArr[img].rowStart) *
                         (intersectedImg as HTMLElement).offsetHeight
                       }px)`,
                     },
@@ -199,10 +320,10 @@ function Card(props: CardProps) {
                   (intersectedImg as HTMLElement).offsetTop +
                   (intersectedImg as HTMLElement).offsetHeight / 2;
                 leftDif -=
-                  (coordsArr[img].col - coordsArr[dragImg].col) *
+                  (coordsArr[img].colStart - coordsArr[dragImg].colStart) *
                   (image as HTMLElement).offsetWidth;
                 topDif -=
-                  (coordsArr[img].row - coordsArr[dragImg].row) *
+                  (coordsArr[img].rowStart - coordsArr[dragImg].rowStart) *
                   (image as HTMLElement).offsetHeight;
                 break;
               }
@@ -235,9 +356,9 @@ function Card(props: CardProps) {
   const mouseUp = useCallback(() => {
     const image = document.querySelector(`#img-div${dragImg}`);
     (image as HTMLElement).style.gridColumnStart =
-      coordsArr[dragImg].col.toString();
+      coordsArr[dragImg].colStart.toString();
     (image as HTMLElement).style.gridRowStart =
-      coordsArr[dragImg].row.toString();
+      coordsArr[dragImg].rowStart.toString();
     (image as HTMLElement).style.transition = "all 0.5s linear";
     (image as HTMLElement).style.top = "0";
     (image as HTMLElement).style.left = "0";
@@ -253,8 +374,14 @@ function Card(props: CardProps) {
     <article
       className={`bg-teal-400/40 rounded-2xl relative grid`}
       style={{
-        gridTemplateColumns: `repeat(${cols}, 10rem)`,
-        gridTemplateRows: `repeat(${rows}, 10rem)`,
+        gridTemplateColumns: `repeat(${
+          cols || wantedForm === "ladder" ? 3 : undefined
+        }, 10rem)`,
+        gridTemplateRows: `repeat(${
+          rows || wantedForm === "ladder"
+            ? Math.floor((imgNum as number) / 2)
+            : undefined
+        }, 10rem)`,
       }}
       id="card"
     >
