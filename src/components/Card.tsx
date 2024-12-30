@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import "./Card.css";
 
 interface ImageCoords {
@@ -239,15 +239,15 @@ function Card(props: CardProps) {
           if (
             between(
               coordsArr[dragImg].centerX,
-              coordsArr[img].centerX - 40,
-              coordsArr[img].centerX + 40
+              coordsArr[img].centerX - 50,
+              coordsArr[img].centerX + 50
             )
           ) {
             if (
               between(
                 coordsArr[dragImg].centerY,
-                coordsArr[img].centerY - 40,
-                coordsArr[img].centerY + 40
+                coordsArr[img].centerY - 50,
+                coordsArr[img].centerY + 50
               )
             ) {
               if (!moving) {
@@ -297,15 +297,31 @@ function Card(props: CardProps) {
                       transform: `translate(${
                         (coordsArr[dragImg].colStart -
                           coordsArr[img].colStart) *
-                        (intersectedImg as HTMLElement).offsetWidth
+                        ((intersectedImg as HTMLElement).offsetWidth >
+                        (image as HTMLElement).offsetWidth
+                          ? (image as HTMLElement).offsetWidth
+                          : (intersectedImg as HTMLElement).offsetWidth)
                       }px, ${
                         (coordsArr[dragImg].rowStart -
                           coordsArr[img].rowStart) *
-                        (intersectedImg as HTMLElement).offsetHeight
+                        (image as HTMLElement).offsetHeight
                       }px)`,
+                      width: `${(image as HTMLElement).offsetWidth}px`,
                     },
                     {
                       transform: `translate(0px, 0px)`,
+                      width: `${(intersectedImg as HTMLElement).offsetWidth}px`,
+                    },
+                  ],
+                  { duration: 200 }
+                );
+                (image as HTMLElement).animate(
+                  [
+                    {
+                      width: `${(intersectedImg as HTMLElement).offsetWidth}px`,
+                    },
+                    {
+                      width: `${(image as HTMLElement).offsetWidth}px`,
                     },
                   ],
                   { duration: 200 }
@@ -319,12 +335,21 @@ function Card(props: CardProps) {
                 coordsArr[img].centerY =
                   (intersectedImg as HTMLElement).offsetTop +
                   (intersectedImg as HTMLElement).offsetHeight / 2;
-                leftDif -=
-                  (coordsArr[img].colStart - coordsArr[dragImg].colStart) *
-                  (image as HTMLElement).offsetWidth;
-                topDif -=
-                  (coordsArr[img].rowStart - coordsArr[dragImg].rowStart) *
-                  (image as HTMLElement).offsetHeight;
+                if (cols && rows) {
+                  leftDif -=
+                    (coordsArr[img].colStart - coordsArr[dragImg].colStart) *
+                    (image as HTMLElement).offsetWidth;
+                  topDif -=
+                    (coordsArr[img].rowStart - coordsArr[dragImg].rowStart) *
+                    (image as HTMLElement).offsetHeight;
+                }
+                if (wantedForm === "ladder") {
+                  leftDif = (event as MouseEvent).clientX;
+
+                  topDif -=
+                    (coordsArr[img].rowStart - coordsArr[dragImg].rowStart) *
+                    (image as HTMLElement).offsetHeight;
+                }
                 break;
               }
             }
@@ -370,6 +395,12 @@ function Card(props: CardProps) {
     document.removeEventListener("mouseup", mouseUp);
   }, [dragImg]);
 
+  const wantedRows = useMemo(() => {
+    if (wantedForm === "ladder") {
+      return Math.floor((imgNum as number) / 2) + ((imgNum as number) % 2);
+    }
+  }, []);
+
   return (
     <article
       className={`bg-teal-400/40 rounded-2xl relative grid`}
@@ -377,11 +408,7 @@ function Card(props: CardProps) {
         gridTemplateColumns: `repeat(${
           cols || wantedForm === "ladder" ? 3 : undefined
         }, 10rem)`,
-        gridTemplateRows: `repeat(${
-          rows || wantedForm === "ladder"
-            ? Math.floor((imgNum as number) / 2)
-            : undefined
-        }, 10rem)`,
+        gridTemplateRows: `repeat(${rows || wantedRows}, 10rem)`,
       }}
       id="card"
     >
