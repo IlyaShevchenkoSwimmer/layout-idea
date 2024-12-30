@@ -291,17 +291,18 @@ function Card(props: CardProps) {
                 (
                   intersectedImg as HTMLElement
                 ).style.gridRowEnd = `${coordsArr[img].rowEnd}`;
+                let translateFrom: number =
+                  ((coordsArr[dragImg].colStart - coordsArr[img].colStart) *
+                    ((intersectedImg as HTMLElement).offsetWidth >
+                    (image as HTMLElement).offsetWidth
+                      ? (image as HTMLElement).offsetWidth
+                      : (intersectedImg as HTMLElement).offsetWidth)) /
+                  (coordsArr[dragImg].colEnd - coordsArr[dragImg].colStart);
+
                 (intersectedImg as HTMLElement).animate(
                   [
                     {
-                      transform: `translate(${
-                        (coordsArr[dragImg].colStart -
-                          coordsArr[img].colStart) *
-                        ((intersectedImg as HTMLElement).offsetWidth >
-                        (image as HTMLElement).offsetWidth
-                          ? (image as HTMLElement).offsetWidth
-                          : (intersectedImg as HTMLElement).offsetWidth)
-                      }px, ${
+                      transform: `translate(${translateFrom}px, ${
                         (coordsArr[dragImg].rowStart -
                           coordsArr[img].rowStart) *
                         (image as HTMLElement).offsetHeight
